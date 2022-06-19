@@ -99,7 +99,6 @@ void setup()
 
   // Cloud
   Time.zone(GMT);
-  unsigned long now = millis();
   #ifdef USE_BT
     Serial.printf("Set up blynk...");
     blynk_timer_1.setInterval(PUBLISH_BLYNK_DELAY, publish1);
@@ -132,18 +131,13 @@ void loop()
   // Synchronization
   boolean read;                               // Read, T/F
   static Sync *ReadSensors = new Sync(READ_DELAY);
-  boolean publishB;                           // Particle publish, T/F
-  static Sync *PublishBlynk = new Sync(PUBLISH_BLYNK_DELAY);
   boolean publishS;                           // Serial print, T/F
   static Sync *PublishSerial = new Sync(PUBLISH_SERIAL_DELAY);
-  static uint8_t last_read_debug = 0;         // Remember first time with new debug to print headers
   static uint8_t last_publishS_debug = 0;     // Remember first time with new debug to print headers
  
   unsigned long current_time;               // Time result
   static unsigned long now = millis();      // Keep track of time
-  time32_t time_now;                        // Keep track of time
   static unsigned long start = millis();    // Keep track of time
-  unsigned long elapsed = 0;                // Keep track of time
   static boolean reset = true;              // Dynamic reset
   static boolean reset_publish = true;      // Dynamic reset
 
@@ -166,14 +160,11 @@ void loop()
 
   // Keep time
   now = millis();
-  time_now = Time.now();
   sync_time(now, &last_sync, &millis_flip);      // Refresh time synchronization
   char  tempStr[23];  // time, year-mo-dyThh:mm:ss iso format, no time zone
   double control_time = decimalTime(&current_time, tempStr, now, millis_flip);
   hm_string = String(tempStr);
   read = ReadSensors->update(millis(), reset);               //  now || reset
-  elapsed = ReadSensors->now() - start;
-  publishB = PublishBlynk->update(millis(), false);           //  now || false
   publishS = PublishSerial->update(millis(), reset_publish);  //  now || reset_publish
 
 
@@ -188,7 +179,7 @@ void loop()
   // to get a curl command to run
   if ( publishS )
   {
-    assign_publist(&pp.pubList, now, unit, hm_string, control_time, T);
+    assign_publist(&pp.pubList, now-start, unit, hm_string, control_time, T);
  
     // Mon for debug
     if ( publishS )
