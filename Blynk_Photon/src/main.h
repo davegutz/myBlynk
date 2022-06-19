@@ -46,16 +46,17 @@
 #endif
 
 #undef USE_BT             // Change this to #define to use Bluetooth
-#define GMT                   -5        // Enter time different to zulu (does not respect DST) (-5)
 uint8_t debug = 0;
+extern uint8_t debug;
 #include "command.h"
 #include "mySync.h"
+#include "constants.h"
+
 CommandPars cp = CommandPars(); // Various control parameters commanding at system level
-#define PUBLISH_BLYNK_DELAY   10000UL   // Blynk cloud updates, ms (10000UL = 10 sec)
-#define PUBLISH_SERIAL_DELAY  400UL     // Serial print interval (400UL = 0.4 sec)
-#define ONE_DAY_MILLIS        86400000UL// Number of milliseconds in one day (24*60*60*1000)
+extern CommandPars cp;            // Various parameters to be common at system level (reset on PLC reset)
 void sync_time(unsigned long now, unsigned long *last_sync, unsigned long *millis_flip);
 double decimalTime(unsigned long *current_time, char* tempStr, unsigned long now, unsigned long millis_flip);
+const String unit = "pro_20220618";  // 2-pole y_filt, tune hys, BT Blynk struct, but BT text
 
 
 #ifdef USE_BT
@@ -130,6 +131,8 @@ void setup()
 void loop()
 {
   // Synchronization
+  boolean read;                               // Read, T/F
+  static Sync *ReadSensors = new Sync(READ_DELAY);
   boolean publishB;                           // Particle publish, T/F
   static Sync *PublishBlynk = new Sync(PUBLISH_BLYNK_DELAY);
   boolean publishS;                           // Serial print, T/F
@@ -144,6 +147,8 @@ void loop()
   unsigned long elapsed = 0;                // Keep track of time
   static boolean reset = true;              // Dynamic reset
   static boolean reset_publish = true;      // Dynamic reset
+
+  double T = 0;
   
   ///////////////////////////////////////////////////////////// Top of loop////////////////////////////////////////
   // Serial test
@@ -167,16 +172,24 @@ void loop()
   char  tempStr[23];  // time, year-mo-dyThh:mm:ss iso format, no time zone
   double control_time = decimalTime(&current_time, tempStr, now, millis_flip);
   hm_string = String(tempStr);
+  read = ReadSensors->update(millis(), reset);               //  now || reset
   elapsed = ReadSensors->now() - start;
   publishB = PublishBlynk->update(millis(), false);           //  now || false
   publishS = PublishSerial->update(millis(), reset_publish);  //  now || reset_publish
+
+
+// Input all other sensors and do high rate calculations
+  if ( read )
+  {
+    T =  ReadSensors->updateTime();
+  }
 
   // Publish to Particle cloud if desired (different than Blynk)
   // Visit https://console.particle.io/events.   Click on "view events on a terminal"
   // to get a curl command to run
   if ( publishS )
   {
-    assign_publist(&pp.pubList, PublishParticle->now(), unit, hm_string, Sen, num_timeouts, Mon);
+    assign_publist(&pp.pubList, PublishSerial->now(), unit, hm_string, num_timeouts);
  
     // Mon for debug
     if ( publishS )
@@ -188,13 +201,9 @@ void loop()
           print_serial_header();
           if ( debug==24 ) print_serial_sim_header();
         }
-        serial_print(PublishSerial->now(), Sen->T);
+        serial_print(PublishSerial->now(), T);
       }
 
-      if ( debug==-4 )
-      {
-        debug_m4(Mon, Sen);
-      }
       last_publishS_debug = debug;
     }
 

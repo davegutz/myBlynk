@@ -71,7 +71,7 @@ boolean Sync::update(unsigned long now, boolean reset)
     last_ = now_;
     updateTime_ = double(updateDiff_)/1000.;
   }
-  if ( rp.debug==-13 ) Serial.printf("reset,now,last,updateDiff,updateTime,delay,stat, %d, %ld, %ld, %ld,%7.3f, %ld, %d,\n",
+  if ( debug==-13 ) Serial.printf("reset,now,last,updateDiff,updateTime,delay,stat, %d, %ld, %ld, %ld,%7.3f, %ld, %d,\n",
             reset, now_, last_, updateDiff_, updateTime_, delay_, int(stat_));
   return( stat_ );
 }

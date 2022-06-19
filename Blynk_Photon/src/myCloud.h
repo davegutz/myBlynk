@@ -36,5 +36,10 @@ void publish1(void);
 void publish2(void);
 void publish3(void);
 void publish4(void);
+void assign_publist(Publish* pubList, const unsigned long now, const String unit, const String hm_string, const int num_timeouts);
+void print_serial_header(void);
+void print_serial_sim_header(void);
+void serial_print(unsigned long now, double T);
+String time_long_2_str(const unsigned long current_time, char *tempStr);
 
 #endif
