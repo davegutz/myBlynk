@@ -45,7 +45,7 @@
   #undef min
 #endif
 
-#undef USE_BT             // Change this to #define to use Bluetooth
+#define USE_BT             // Change this to #define to use Bluetooth
 uint8_t debug = 4;
 extern uint8_t debug;
 #include "command.h"
@@ -202,7 +202,7 @@ void loop()
   // Publish1 Blynk
   void publish1(void)
   {
-    if (debug==25) Serial.printf("Blynk write1\n");
+    Serial.printf("Blynk write1\n");
     Blynk.virtualWrite(V2,  pp.pubList.Vbatt);
     Blynk.virtualWrite(V3,  pp.pubList.Voc);
     Blynk.virtualWrite(V4,  pp.pubList.Vbatt);
@@ -212,7 +212,7 @@ void loop()
   // Publish2 Blynk
   void publish2(void)
   {
-    if (debug==25) Serial.printf("Blynk write2\n");
+    Serial.printf("Blynk write2\n");
     Blynk.virtualWrite(V6,  pp.pubList.soc);
     Blynk.virtualWrite(V8,  pp.pubList.T);
     Blynk.virtualWrite(V10, pp.pubList.Tbatt);
@@ -222,7 +222,7 @@ void loop()
   // Publish3 Blynk
   void publish3(void)
   {
-    if (debug==25) Serial.printf("Blynk write3\n");
+    Serial.printf("Blynk write3\n");
     Blynk.virtualWrite(V15, pp.pubList.hm_string);
     Blynk.virtualWrite(V16, pp.pubList.tcharge);
   }
@@ -231,30 +231,9 @@ void loop()
   // Publish4 Blynk
   void publish4(void)
   {
-    if (debug==25) Serial.printf("Blynk write4\n");
+    Serial.printf("Blynk write4\n");
     Blynk.virtualWrite(V18, pp.pubList.Ibatt);
     Blynk.virtualWrite(V20, pp.pubList.Wbatt);
     Blynk.virtualWrite(V21, pp.pubList.soc_ekf);
   }
 #endif
-
-// Time synchro for web information
-void sync_time(unsigned long now, unsigned long *last_sync, unsigned long *millis_flip)
-{
-  if (now - *last_sync > ONE_DAY_MILLIS) 
-  {
-    *last_sync = millis();
-
-    // Request time synchronization from the Particle Cloud
-    if ( Particle.connected() ) Particle.syncTime();
-
-    // Refresh millis() at turn of Time.now
-    long time_begin = Time.now();
-    while ( Time.now()==time_begin )
-    {
-      delay(1);
-      *millis_flip = millis()%1000;
-    }
-  }
-}
-

@@ -81,8 +81,9 @@ public:
     }
 
     void begin(Stream& stream, const char* auth) {
+        int count = 0;
         config(stream, auth);
-        while(this->connect() != true) {}
+        while(this->connect() != true && ++count<4) {}
     }
 };
 

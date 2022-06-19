@@ -188,3 +188,23 @@ double decimalTime(unsigned long *current_time, char* tempStr, unsigned long now
   double cTime = cTimeInit + double(now-millis_flip)/1000.;
   return ( cTime );
 }
+
+// Time synchro for web information
+void sync_time(unsigned long now, unsigned long *last_sync, unsigned long *millis_flip)
+{
+  if (now - *last_sync > ONE_DAY_MILLIS) 
+  {
+    *last_sync = millis();
+
+    // Request time synchronization from the Particle Cloud
+    if ( Particle.connected() ) Particle.syncTime();
+
+    // Refresh millis() at turn of Time.now
+    long time_begin = Time.now();
+    while ( Time.now()==time_begin )
+    {
+      delay(1);
+      *millis_flip = millis()%1000;
+    }
+  }
+}
