@@ -8,3 +8,4 @@
 *.o
 *.crc_block
 *.map
+*.dfu

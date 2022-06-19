@@ -45,8 +45,8 @@
   #undef min
 #endif
 
-#define USE_BT             // Change this to #define to use Bluetooth
-uint8_t debug = 0;
+#undef USE_BT             // Change this to #define to use Bluetooth
+uint8_t debug = 4;
 extern uint8_t debug;
 #include "command.h"
 #include "mySync.h"
@@ -55,7 +55,7 @@ extern uint8_t debug;
 CommandPars cp = CommandPars(); // Various control parameters commanding at system level
 extern CommandPars cp;            // Various parameters to be common at system level (reset on PLC reset)
 extern PublishPars pp;            // For publishing
-const String unit = "pro_20220618";  // 2-pole y_filt, tune hys, BT Blynk struct, but BT text
+const String unit = "pro_20220619";
 
 
 #ifdef USE_BT

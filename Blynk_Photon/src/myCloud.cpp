@@ -29,73 +29,9 @@
 #include "constants.h"
 #include <math.h>
 
-// #include "Blynk/BlynkSimpleSerialBLE.h"
-// #define BLYNK_PRINT Serial
-
 extern uint8_t debug;
 extern CommandPars cp;            // Various parameters to be common at system level (reset on PLC reset)
 extern PublishPars pp;            // For publishing
-
-/* dag 6/18/2022
-// extern BlynkTimer blynk_timer_1, blynk_timer_2, blynk_timer_3, blynk_timer_4;     // Time Blynk events
-// extern BlynkStream Blynk;       // Blynk object
-
-// Publish1 Blynk
-void publish1(void)
-{
-  if (debug>104) Serial.printf("Blynk write1\n");
-  Blynk.virtualWrite(V2,  pp.pubList.Vbatt);
-  Blynk.virtualWrite(V3,  pp.pubList.Voc);
-  Blynk.virtualWrite(V4,  pp.pubList.Vbatt);
-}
-
-
-// Publish2 Blynk
-void publish2(void)
-{
-  if (debug>104) Serial.printf("Blynk write2\n");
-  Blynk.virtualWrite(V6,  pp.pubList.soc);
-  Blynk.virtualWrite(V8,  pp.pubList.T);
-  Blynk.virtualWrite(V10, pp.pubList.Tbatt);
-}
-
-
-// Publish3 Blynk
-void publish3(void)
-{
-  if (debug>104) Serial.printf("Blynk write3\n");
-  Blynk.virtualWrite(V15, pp.pubList.hm_string);
-  Blynk.virtualWrite(V16, pp.pubList.tcharge);
-}
-
-
-// Publish4 Blynk
-void publish4(void)
-{
-  if (debug>104) Serial.printf("Blynk write4\n");
-  Blynk.virtualWrite(V18, pp.pubList.Ibatt);
-  Blynk.virtualWrite(V20, pp.pubList.Wbatt);
-  Blynk.virtualWrite(V21, pp.pubList.soc_ekf);
-}
-
-
-// Attach a Slider widget to the Virtual pin 4 IN in your Blynk app
-// - and control the web desired temperature.
-// Note:  there are separate virtual IN and OUT in Blynk.
-BLYNK_WRITE(V4) {
-    if (param.asInt() > 0)
-    {
-        //pubList.webDmd = param.asDouble();
-    }
-}
-
-
-// Attach a switch widget to the Virtual pin 6 in your Blynk app - and demand continuous web control
-// Note:  there are separate virtual IN and OUT in Blynk.
-BLYNK_WRITE(V6) {
-//    pubList.webHold = param.asInt();
-}
-*/
 
 // Assignments
 void assign_publist(Publish* pubList, const unsigned long now, const String unit, const String hm_string, const double control_time,
@@ -113,7 +49,7 @@ void assign_publist(Publish* pubList, const unsigned long now, const String unit
 
   // Blynk.virtualWrite(V6,  pp.pubList.soc);
   static uint8_t noise_soc = 0x03;
-  pubList->soc = 0.9 + prbs(&noise_soc)/0.1;
+  pubList->soc = 0.9 + prbs(&noise_soc)/10.;
 
   // Blynk.virtualWrite(V8,  pp.pubList.T);
 
@@ -138,7 +74,7 @@ void assign_publist(Publish* pubList, const unsigned long now, const String unit
 
   // Blynk.virtualWrite(V21, pp.pubList.soc_ekf);
   static uint8_t noise_soc_ekf = 0x07;
-  pubList->soc_ekf = 0.9 + prbs(&noise_soc_ekf)/0.1;
+  pubList->soc_ekf = 0.9 + prbs(&noise_soc_ekf)/10.;
 
   pubList->now = now;
   pubList->unit = unit;
