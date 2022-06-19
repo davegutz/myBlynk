@@ -1,0 +1,10 @@
+
+*.bin
+*.no_crc
+*.elf
+*.hex
+*.lst
+*.d
+*.o
+*.crc_block
+*.map
