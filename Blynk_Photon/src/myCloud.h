@@ -36,10 +36,14 @@ void publish1(void);
 void publish2(void);
 void publish3(void);
 void publish4(void);
-void assign_publist(Publish* pubList, const unsigned long now, const String unit, const String hm_string, const int num_timeouts);
+void assign_publist(Publish* pubList, const unsigned long now, const String unit, const String hm_string, const double control_time,
+const double T);
 void print_serial_header(void);
-void print_serial_sim_header(void);
 void serial_print(unsigned long now, double T);
 String time_long_2_str(const unsigned long current_time, char *tempStr);
+float prbs(uint8_t *seed);
+void create_print_string(Publish *pubList);
+void sync_time(unsigned long now, unsigned long *last_sync, unsigned long *millis_flip);
+double decimalTime(unsigned long *current_time, char* tempStr, unsigned long now, unsigned long millis_flip);
 
 #endif

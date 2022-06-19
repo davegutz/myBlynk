@@ -45,7 +45,7 @@
   #undef min
 #endif
 
-#undef USE_BT             // Change this to #define to use Bluetooth
+#define USE_BT             // Change this to #define to use Bluetooth
 uint8_t debug = 0;
 extern uint8_t debug;
 #include "command.h"
@@ -54,8 +54,7 @@ extern uint8_t debug;
 
 CommandPars cp = CommandPars(); // Various control parameters commanding at system level
 extern CommandPars cp;            // Various parameters to be common at system level (reset on PLC reset)
-void sync_time(unsigned long now, unsigned long *last_sync, unsigned long *millis_flip);
-double decimalTime(unsigned long *current_time, char* tempStr, unsigned long now, unsigned long millis_flip);
+extern PublishPars pp;            // For publishing
 const String unit = "pro_20220618";  // 2-pole y_filt, tune hys, BT Blynk struct, but BT text
 
 
@@ -189,25 +188,18 @@ void loop()
   // to get a curl command to run
   if ( publishS )
   {
-    assign_publist(&pp.pubList, PublishSerial->now(), unit, hm_string, num_timeouts);
+    assign_publist(&pp.pubList, now, unit, hm_string, control_time, T);
  
     // Mon for debug
     if ( publishS )
     {
-      if ( debug==4 || debug==24 )
-      {
-        if ( reset_publish || (last_publishS_debug != debug) )
-        {
-          print_serial_header();
-          if ( debug==24 ) print_serial_sim_header();
-        }
+        if ( reset_publish || (last_publishS_debug != debug) ) print_serial_header();
         serial_print(PublishSerial->now(), T);
-      }
-
-      last_publishS_debug = debug;
     }
-
+    last_publishS_debug = debug;
   }
+
+
 
   // Initialize complete once sensors and models started and summary written
   if ( publishS ) reset_publish = false;
@@ -275,40 +267,3 @@ void sync_time(unsigned long now, unsigned long *last_sync, unsigned long *milli
   }
 }
 
-// Convert time to decimal for easy lookup
-double decimalTime(unsigned long *current_time, char* tempStr, unsigned long now, unsigned long millis_flip)
-{
-  *current_time = Time.now();
-  uint32_t year = Time.year(*current_time);
-  uint8_t month = Time.month(*current_time);
-  uint8_t day = Time.day(*current_time);
-  uint8_t hours = Time.hour(*current_time);
-
-  // Second Sunday Mar and First Sunday Nov; 2:00 am; crude DST handling
-  if ( USE_DST)
-  {
-    uint8_t dayOfWeek = Time.weekday(*current_time);     // 1-7
-    if (  month>2   && month<12 &&
-      !(month==3  && ((day-dayOfWeek)<7 ) && hours>1) &&  // <second Sunday Mar
-      !(month==11 && ((day-dayOfWeek)>=0) && hours>0) )  // >=first Sunday Nov
-      {
-        Time.zone(GMT+1);
-        *current_time = Time.now();
-        day = Time.day(*current_time);
-        hours = Time.hour(*current_time);
-      }
-  }
-  uint8_t dayOfWeek = Time.weekday(*current_time)-1;  // 0-6
-  uint8_t minutes   = Time.minute(*current_time);
-  uint8_t seconds   = Time.second(*current_time);
-
-  // Convert the string
-  time_long_2_str(*current_time, tempStr);
-
-  // Convert the decimal
-  if ( debug>105 ) Serial.printf("DAY %u HOURS %u\n", dayOfWeek, hours);
-  static double cTimeInit = ((( (double(year-2021)*12 + double(month))*30.4375 + double(day))*24.0 + double(hours))*60.0 + double(minutes))*60.0 + \
-                      double(seconds) + double(now-millis_flip)/1000.;
-  double cTime = cTimeInit + double(now-millis_flip)/1000.;
-  return ( cTime );
-}

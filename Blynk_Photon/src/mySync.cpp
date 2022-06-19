@@ -25,8 +25,7 @@
 #include "application.h" // Should not be needed if file .ino or Arduino
 #endif
 #include "mySync.h"
-#include "retained.h"
-extern RetainedPars rp;
+extern uint8_t debug;
 
 // Constructors
 Sync::Sync()
